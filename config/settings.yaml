@@ -1,0 +1,14 @@
+paths:
+  raw: "./data/raw" # Directory for raw input JSON files
+  processed: "./data/processed" # Directory for processed output IMG files
+  archive: "./data/archive" # Directory for archived files
+
+mongo:
+  uri: "mongodb://localhost:27017"  # MongoDB connection URI
+  db: "invoices_db" # Database name
+  collection_invoices: "invoices" # Main invoices collection
+  collection_embeddings: "invoice_to_embeddings" # Embeddings collection
+
+thresholds:
+  arithmetic_tolerance: 0.01
+  duplicate_similarity: 0.95

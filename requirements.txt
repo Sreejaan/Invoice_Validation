@@ -1,0 +1,11 @@
+pymongo>=4.8
+watchdog>=3.0
+pyyaml>=6.0
+sentence-transformers>=2.2
+streamlit>=1.38
+pandas>=2.2
+python-dateutil>=2.9
+pymongo
+jupyter
+python-dotenv>=1.0
+numpy>=1.24
