@@ -73,7 +73,7 @@ def insert_doc(doc: Dict, file_name: Optional[str] = None) -> Dict:
         existing = is_exact_duplicate(doc)
         if existing:
             logging.info(f"Exact duplicate found for in-memory doc, existing _id={existing.get('_id')}. Skipping insert.")
-            return {"duplicate_id": str(existing.get("_id"))}
+            return {"duplicate_id": str(existing.get("_id")), "status":"420"}
         
         if file_name is None:
             file_name = doc["invoice_number"] +';'+ doc["invoiced_date"]
@@ -84,7 +84,7 @@ def insert_doc(doc: Dict, file_name: Optional[str] = None) -> Dict:
             matches = find_similar_embeddings(emb)
             if matches:
                 logging.info(f"Fuzzy matches found for in-memory doc: {matches}. Skipping insert.")
-                return {"fuzzy_matches": matches}
+                return {"fuzzy_matches": matches, "status": "420"}
 
         result = invoices_collection.insert_one(doc)
         inserted_id = result.inserted_id
@@ -93,7 +93,7 @@ def insert_doc(doc: Dict, file_name: Optional[str] = None) -> Dict:
         emb_doc = {"invoice_id": str(inserted_id), "embedding": emb, "file_name": file_name}
         embeddings_collection.insert_one(emb_doc)
         logging.info(f"Inserted in-memory doc -> _id={inserted_id}")
-        return {"inserted_id": str(inserted_id)}
+        return {"status": str(200)}
     except Exception as e:
         logging.error(f"Error inserting in-memory doc: {e}")
         return {"error": str(e)}
