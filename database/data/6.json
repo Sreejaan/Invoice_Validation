@@ -1,0 +1,31 @@
+{
+  "Description": "BASKET",
+  "invoice_no": "SBD/25-26/197",
+  "invoice_date": "20-Aug-25",
+  "invoice_amount": 1208075.0,
+  "gstin_company": "24AAGC19537F1ZG",
+  "gstin_client": null,
+  "hsn_codes": "84049000",
+  "items": [
+    {
+      "description": "BASKET",
+      "hsn_sac": "84049000",
+      "quantity": 6.0,
+      "rate": 170632.0,
+      "amount": 1023792.0,
+      "cgst": 92141.28,
+      "sgst": 92141.28,
+      "igst": null,
+      "total": null
+    }
+  ],
+  "summary": {
+    "subtotal": 1023792.0,
+    "tax_amount": 184282.56,
+    "total_amount": 1208075.0,
+    "gst": 184282.56,
+    "cgst": 92141.28,
+    "sgst": 92141.28,
+    "igst": null
+  }
+}
