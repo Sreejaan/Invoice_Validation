@@ -5,8 +5,8 @@ paths:
 
 
 mongo:
-  uri: "mongodb://localhost:27017"  # MongoDB connection URI
-  db: "invoices_db" # Database name
+  uri: "mongodb+srv://bk_db_user:v9tF48XQoI3g8Jz8@cluster0.ynj3gxs.mongodb.net/?appName=Cluster0"  # MongoDB connection URI (updated to hosted cluster)
+  db: "invoice_db" # Database name
   collection_invoices: "invoices" # Main invoices collection
   collection_embeddings: "invoice_to_embeddings" # Embeddings collection
 

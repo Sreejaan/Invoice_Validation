@@ -1,0 +1,30 @@
+# Untrack entire folders
+.venv/
+.vscode/
+database/data_raw/
+database/data_transformed/
+logs/
+temp/
+donut_peft_lora_output/
+tests/
+uploaded_pdfs/
+data_base/data
+data/
+
+# Untrack specific file types
+*.log
+*.tmp
+*.pyc
+__pycache__/
+
+# Untrack sensitive files
+.env
+secrets.json
+config.local.py
+
+# Untrack macOS/Windows junk
+.DS_Store
+Thumbs.db
+invoices.db
+
+data_base/create_invoices_database.py
