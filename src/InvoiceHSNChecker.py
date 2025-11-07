@@ -1,4 +1,4 @@
-from HSNValidate import fetch_hsn_details
+from src.HSNValidate import fetch_hsn_details
 # from validate_invoice import validate_invoice
 
 
@@ -28,12 +28,12 @@ def process_invoice(invoice_data: dict) -> str | dict:
             # all_errors.append(f"Item {idx}: Missing HSN/SAC code.")
             continue
 
-        hsn_info = fetch_hsn_desrtails(hsn_code)
+        hsn_info = fetch_hsn_details(hsn_code)
         if not hsn_info:
             all_errors.append(f"Item {idx}: HSN {hsn_code} not found or invalid.")
 
     # --- Step 3: Return final result ---
     if not all_errors:
-        return "Success"
+        return {"status":True}
 
-    return {"errors": all_errors}
+    return {"status":False,"errors": all_errors}
