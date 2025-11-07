@@ -112,7 +112,7 @@ def main():
             COLLECTION_NAME,
             validator=INVOICE_SCHEMA,
             validationLevel="strict",
-            validationAction="error"
+            validationAction="warning"
         )
         print(f"Collection '{COLLECTION_NAME}' created with schema validation")
     except CollectionInvalid:

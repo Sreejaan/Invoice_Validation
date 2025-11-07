@@ -1,7 +1,8 @@
 paths:
-  raw: "./data/raw" # Directory for raw input JSON files
+  raw: "./data/raw" # Directory for raw input PDF files
   processed: "./data/processed" # Directory for processed output IMG files
   archive: "./data/archive" # Directory for archived files
+
 
 mongo:
   uri: "mongodb://localhost:27017"  # MongoDB connection URI

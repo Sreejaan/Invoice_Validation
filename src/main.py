@@ -1,15 +1,35 @@
 from src.invoice_extractor import extract_invoice_data
 from src.GSTValidate import verify_gstin
 from src.arthimeticCheck import validate_invoice
-from src.InvoiceHSNChecker import process_invoice   
+from src.InvoiceHSNChecker import process_invoice
 
 import json
+import os
+from pathlib import Path
+import yaml
+
 # Example usage
 # result = extract_invoice_data("../16.pdf")
 
-import os
 
-def validate_invoices_in_directory(directory = r"E:\Projects\Fintech\new"):
+def validate_invoices_in_directory():
+    """Validate all JSON invoices using the default input directory from config/settings.yaml.
+
+    This function does not accept parameters — the directory is taken from
+    `config/settings.yaml` -> `paths.raw`. If the config read fails, it falls
+    back to `./data/raw` relative to the project root.
+    """
+    # locate project config relative to this file
+    cfg_path = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
+    try:
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        directory = cfg.get("paths", {}).get("raw", "./data/raw")
+    except Exception:
+        # fallback to repo-local path
+        directory = "./data/raw"
+    # normalize path
+    directory = os.path.abspath(directory)
     # Path to directory containing JSON files
     
     file_statuses_pass = 0
