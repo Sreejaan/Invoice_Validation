@@ -4,7 +4,7 @@ import os
 import zipfile
 import tempfile
 import json
-import sqlite3
+from connection import get_collections
 import pandas as pd
 from invoice_extracter import extract_invoice_data
 import subprocess
@@ -96,35 +96,11 @@ def check_invoice_data_schema(data_dict):
         errors.append("Tax cannot be negative")
     return errors
 
-def init_db():
-    conn = sqlite3.connect("invoices.db")
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS invoices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            file_name TEXT,
-            invoice_number TEXT,
-            gstin TEXT,
-            total_amount REAL,
-            tax REAL
-        )
-    """)
-    conn.commit()
-    conn.close()
 
-def save_to_db(data_dict):
-    conn = sqlite3.connect("invoices.db")
-    conn.execute("""
-        INSERT INTO invoices (file_name, invoice_number, gstin, total_amount, tax)
-        VALUES (?, ?, ?, ?, ?)
-    """, (
-        data_dict.get("file_name"),
-        data_dict.get("invoice_number"),
-        data_dict.get("gstin"),
-        data_dict.get("total_amount"),
-        data_dict.get("tax"),
-    ))
-    conn.commit()
-    conn.close()
+# Use MongoDB collections instead of local sqlite
+def get_invoices_collection():
+    invoices_collection, _ = get_collections()
+    return invoices_collection
 
 def extract_zip(zip_file):
     temp_dir = tempfile.mkdtemp()
@@ -136,8 +112,6 @@ def extract_zip(zip_file):
 # Streamlit UI
 # ---------------------------
 st.set_page_config(page_title="Invoice Validator", page_icon="📊", layout="wide")
-
-init_db()
 st.title("📂 Invoice File Uploader → JSON Extractor → Validator → MongoDB Saver")
 
 upload_type = st.radio("Choose upload type:", ["File(s)", "ZIP Folder"], horizontal=True)
@@ -160,7 +134,6 @@ if st.button("🚀 Run Inference and Validate"):
     if not uploaded_files:
         st.warning("Please upload at least one file.")
     else:
-        init_db()
         st.write("Processing files...")
 
         anomalies = []
@@ -261,7 +234,7 @@ if st.button("🚀 Run Inference and Validate"):
                 if str(mongo_status.get("status")) == "200":
                     st.success(f"✅ {filename}: Valid & Saved to MongoDB")
                     summary_rows.append({"File": filename, "Status": "Success"})
-                    save_to_db(normalized)  # optional local backup
+                    # already saved into MongoDB by insert_doc
                 elif str(mongo_status.get("status")) == "420":
                     st.warning(f"⚠️ {filename}: Duplicate or fuzzy match found, skipped insertion.")
                     summary_rows.append({"File": filename, "Status": "Duplicate"})
@@ -334,12 +307,60 @@ if st.button("🚀 Run Inference and Validate"):
         else:
             st.success("🎉 No anomalies found! All invoices are valid.")
 
-# View stored invoices
+# View stored invoices (from MongoDB)
 if st.button("📋 View Stored Invoices"):
-    conn = sqlite3.connect("invoices.db")
-    df = pd.read_sql_query("SELECT * FROM invoices", conn)
+    invoices_collection = get_invoices_collection()
+    docs = list(invoices_collection.find({}, {'_id': 1, 'file_name': 1, 'invoice_no': 1, 'gstin_company': 1, 'summary': 1, 'items': 1}).limit(100))
+    # normalize for dataframe
+    rows = []
+    for d in docs:
+        summary = d.get('summary') or {}
+        rows.append({
+            # 'id': str(d.get('_id')),
+            # 'file_name': d.get('file_name'),
+            'invoice_number': d.get('invoice_no'),
+            'gstin': d.get('gstin_company'),
+            'total_amount': summary.get('total_amount') if isinstance(summary, dict) else None,
+            'tax': summary.get('tax_amount') if isinstance(summary, dict) else None,
+        })
+    df = pd.DataFrame(rows)
     st.dataframe(df, use_container_width=True)
-    conn.close()
+
+    # Show detailed items + summary per invoice in expanders
+    st.subheader("📄 Invoice Details")
+    if not docs:
+        st.info("No invoices found in the database.")
+    else:
+        for d in docs:
+            # invoice_id = str(d.get('_id'))
+            with st.expander(f"Invoice : {d.get('file_name') or d.get('invoice_no')}"):
+                # Summary
+                summary = d.get('summary') or {}
+                st.markdown("**Summary**")
+                summary_rows = {
+                    'subtotal': summary.get('subtotal'),
+                    'tax_amount': summary.get('tax_amount'),
+                    'total_amount': summary.get('total_amount'),
+                    'cgst': summary.get('cgst'),
+                    'sgst': summary.get('sgst'),
+                    'igst': summary.get('igst'),
+                }
+                st.write(summary_rows)
+
+                # Items table
+                print("DOC", d)
+                items = d.get('items') or []
+                print("ITEMS", items)
+                if items and isinstance(items, list):
+                    try:
+                        items_df = pd.DataFrame(items)
+                        st.markdown("**Line Items**")
+                        st.dataframe(items_df, use_container_width=True)
+                    except Exception:
+                        st.markdown("**Line Items (raw)**")
+                        st.json(items)
+                else:
+                    st.info("No line items present for this invoice.")
 
 if st.button("💬 Open RAG QA over Invoices"):
     st.info("Launching RAG QA interface...")
