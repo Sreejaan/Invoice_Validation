@@ -150,6 +150,42 @@ def process_invoice_batch(file_paths: List[str], model: PeftModel, processor: Au
             print(f"  - {f}")
 
 
+def run_ocr(path:str):
+    try:
+        MAX_TARGET_LENGTH = MAX_TARGET_LENGTH
+    except NameError:
+        MAX_TARGET_LENGTH = 512 
+
+    # --- ⚠️ UPDATE THIS PATH ---
+    # Put the path to your FOLDER containing invoices
+    INPUT_FOLDER_PATH = path
+    
+    # --- ⚠️ UPDATE THIS PATH ---
+    # Where to save all the final JSON files
+    OUTPUT_JSON_DIR = "./invoice_outputs" 
+
+    # 1. Create the list of files to process
+    # This example finds all pdf, png, jpg, and tiff files in the input folder
+    file_types = ["*.pdf", "*.png", "*.jpg", "*.jpeg", "*.tiff"]
+    all_files = []
+    for file_type in file_types:
+        all_files.extend(glob.glob(os.path.join(INPUT_FOLDER_PATH, file_type)))
+
+    if not all_files:
+        print(f"Error: No valid files found in {INPUT_FOLDER_PATH}")
+    else:
+        # 2. Load the model and processor (only ONCE)
+        model, processor = load_model(BASE_MODEL_NAME, ADAPTER_PATH, DEVICE)
+    
+        # 3. Run batch extraction
+        process_invoice_batch(
+            file_paths=all_files,
+            model=model,
+            processor=processor,
+            output_dir=OUTPUT_JSON_DIR,
+            max_target_len=MAX_TARGET_LENGTH
+        )
+
 # -----------------
 # MAIN EXECUTION
 # -----------------

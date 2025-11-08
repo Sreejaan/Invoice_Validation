@@ -7,6 +7,19 @@ import json
 import sqlite3
 import pandas as pd
 from invoice_extracter import extract_invoice_data
+import subprocess
+import webbrowser
+import sys
+import importlib.util
+file_path = os.path.abspath("ocr extract/inference.py")
+
+spec = importlib.util.spec_from_file_location("inference", file_path)
+module = importlib.util.module_from_spec(spec)
+sys.modules["inference"] = module
+spec.loader.exec_module(module)
+
+# Now you can use it
+run_ocr = module.run_ocr
 
 # ---- Try flexible imports for validators ----
 
@@ -49,6 +62,9 @@ def run_inference(file_obj):
         tmp.flush()
         tmp_path = tmp.name
     try:
+        #Prathamesh ocr
+        # result = run_ocr(tmp_path)
+        # print(f"Extracted data: {result}")
         result = extract_invoice_data(tmp_path)
     finally:
         try:
@@ -120,6 +136,8 @@ def extract_zip(zip_file):
 # Streamlit UI
 # ---------------------------
 st.set_page_config(page_title="Invoice Validator", page_icon="📊", layout="wide")
+
+init_db()
 st.title("📂 Invoice File Uploader → JSON Extractor → Validator → MongoDB Saver")
 
 upload_type = st.radio("Choose upload type:", ["File(s)", "ZIP Folder"], horizontal=True)
@@ -322,3 +340,12 @@ if st.button("📋 View Stored Invoices"):
     df = pd.read_sql_query("SELECT * FROM invoices", conn)
     st.dataframe(df, use_container_width=True)
     conn.close()
+
+if st.button("💬 Open RAG QA over Invoices"):
+    st.info("Launching RAG QA interface...")
+
+    # Launch streamlit_app.py in a new process on port 8502
+    subprocess.Popen(["streamlit", "run", "Rag-Chat-Hackathon\streamlit_app.py", "--server.port", "8502"])
+
+    # Optionally, open in browser
+    webbrowser.open_new_tab("http://localhost:8502")
