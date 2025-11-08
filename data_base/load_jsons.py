@@ -32,7 +32,7 @@ def insert_one_json(file_path):
         if existing:
             logging.info(f"Exact duplicate found for {file_path.name}, existing _id={existing.get('_id')}. Skipping insert.")
             print(f"Duplicate: {file_path} -> existing_id={existing.get('_id')}")
-            return
+            return {"duplicate_id": str(existing.get("_id")), "status":"420"}
 
         # Compute embedding and check fuzzy similarity against stored embeddings
         emb = compute_embedding(doc)
@@ -41,7 +41,7 @@ def insert_one_json(file_path):
             if matches:
                 logging.info(f"Fuzzy matches found for {file_path.name}: {matches}. Skipping insert.")
                 print(f"FuzzyDuplicate: {file_path} -> matches={matches}")
-                return
+                return {"fuzzy_matches": matches, "status": "420"}
 
         result = invoices_collection.insert_one(doc)
         logging.info(f"Inserted {file_path} as _id={result.inserted_id}")
