@@ -4,8 +4,6 @@ import json
 import google.generativeai as genai
 
 # --- Configuration ---
-# API_KEY = "AIzaSyCkgv8vv9lvS1X_ZBD38BGK0nhRbkXwSug"
-API_KEY = "AIzaSyCwWoaxIg06OXIuBhX5PzFRlnXk9pOYkrA"
 genai.configure(api_key=API_KEY)
 
 MODEL_NAME = "models/gemini-2.5-pro"
